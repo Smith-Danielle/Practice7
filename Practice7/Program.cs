@@ -11,7 +11,6 @@ namespace Practice7
     {
         static void Main(string[] args)
         {
-
             //Lines for Text Tool Kit App
             /*
             Console.WriteLine("Please enter the text for analyzation");
@@ -26,13 +25,32 @@ namespace Practice7
             Console.WriteLine("Thank you, your input is:");
             Console.WriteLine(input);
             */
-   
+
         }
         /*
 
         Notes for practice
         
         */
+        public static int SearchArray(object[][] arrayToSearch, object[] query)
+        {
+            var searchCheck = arrayToSearch.Where(x => !x.GetType().IsArray || x.Length != 2);
+            if (searchCheck.Count() > 0 || query.Length != 2)
+            {
+                throw new Exception();
+            }
+            int index = 0;
+            string placement = "";
+            if (Type.GetTypeCode(query[0].GetType()) == TypeCode.Int32)
+            {
+                placement = arrayToSearch.Select(x => index++ < arrayToSearch.GetLength(0) && Convert.ToInt32(x[0]) == Convert.ToInt32(query[0]) && Convert.ToInt32(x[1]) == Convert.ToInt32(query[1]) ? $"{index - 1}" : "").Where(x => x != "").FirstOrDefault();
+            }
+            else
+            {
+                placement = arrayToSearch.Select(x => index++ < arrayToSearch.GetLength(0) && Convert.ToString(x[0]) == Convert.ToString(query[0]) && Convert.ToString(x[1]) == Convert.ToString(query[1]) ? $"{index - 1}" : "").Where(x => x != "").FirstOrDefault();
+            }
+            return placement != null && placement != "" ? Convert.ToInt32(placement) : -1;
+        }
         public static int[] ValidateBet(int N, int M, string text)
         {
             var charCheck = text.Where(x => x != ' ' && x != ',' && !char.IsDigit(x));
