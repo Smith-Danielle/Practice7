@@ -29,6 +29,8 @@ namespace Practice7
    
         }
         /*
+
+        Notes for practice
         
         */
         public static int[] ValidateBet(int N, int M, string text)
