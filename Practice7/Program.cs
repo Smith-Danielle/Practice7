@@ -11,27 +11,271 @@ namespace Practice7
     {
         static void Main(string[] args)
         {
-            //Lines for Text Tool Kit App
-            /*
-            Console.WriteLine("Please enter the text for analyzation");
-            string input = Console.ReadLine();
-            while (input.Length == 0)
-            {
-                Console.Clear();
-                Console.WriteLine("Please enter a valid response");
-                input = Console.ReadLine();
-            }
-            Console.Clear();
-            Console.WriteLine("Thank you, your input is:");
-            Console.WriteLine(input);
-            */
-
         }
         /*
+         */
+        public static bool validate(string domain)
+        {
+            string valid = "0123456789.-abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+            if (domain.Length > 253 ||
+                domain.Where(x => valid.Contains(x)).Count() != domain.Length ||
+                ".-".Contains(domain[0]) ||
+                ".-".Contains(domain[domain.Length - 1]))
+            {
+                return false;
+            }
+            var levels = domain.Split('.');
+            if (levels.Length < 2 ||
+                levels.Length > 127 ||
+                levels.Any(x => string.IsNullOrWhiteSpace(x)) ||
+                levels.Where(x => x.Length < 63).Count() != levels.Length ||
+                string.Join("", levels).All(x => char.IsNumber(x)) ||
+                levels.Where(x => ".-".Contains(x[0]) || ".-".Contains(x[x.Length - 1])).Count() > 0 ||
+                levels[levels.Length - 1].All(x => char.IsNumber(x)))
+            {
+                return false;
+            }
+            return true;
+        }
+        public static bool IsBalanced(string s, string caps)
+        {
+            var contain = caps.Where(x => s.Contains(x)).Distinct().Count();
+            if (contain == caps.Length)
+            {
+                int index = 0;
+                var split = string.Join("", caps.Select(x => index++ % 2 == 0 ? x.ToString() : $"{x} ")).Split(" ").Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
+                for (int i = 0; i < split.Count; i++)
+                {
+                    int index2 = 0;
+                    var lastIndex = Convert.ToInt32(s.Select(x => index2++ < s.Length && x == split[i][1] ? $"{index2 - 1}" : "").Where(x => x != "").Last());
+                    string check = s.Substring(s.IndexOf(split[i][0]), lastIndex - s.IndexOf(split[i][0]) + 1);
 
-        Notes for practice
-        
-        */
+                    int even = 0;
+                    for (int j = 0; j < check.Length; j++)
+                    {
+                        if (check[j] == split[i][0])
+                        {
+                            even++;
+                        }
+                        if (check[j] == split[i][1])
+                        {
+                            even--;
+                        }
+                        if (even < 0)
+                        {
+                            return false;
+                        }
+                    }
+                    if (even != 0)
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            if (contain == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+        public static char[] Loneliest(string result)
+        {
+            if (result.Contains(' '))
+            {
+                Dictionary<char, List<int>> spaceCounts = new Dictionary<char, List<int>>();
+                int gap = 0;
+                result = result.Trim();
+                for (int i = 0; i < result.Length; i++)
+                {
+                    if (result[i] == ' ')
+                    {
+                        gap++;
+                    }
+                    else
+                    {
+                        if (spaceCounts.Count > 0)
+                        {
+                            spaceCounts[spaceCounts.ElementAt(spaceCounts.Count - 1).Key].Add(gap);
+                        }
+                        spaceCounts.Add(result[i], new List<int> { gap });
+                        gap = 0;
+                    }
+                    if (i == result.Length - 1)
+                    {
+                        spaceCounts[spaceCounts.ElementAt(spaceCounts.Count - 1).Key].Add(gap);
+                    }
+                }
+                List<char> mostCushion = new List<char>(spaceCounts.Select(x => x.Key));
+                List<char> tempCushion = new List<char>(spaceCounts.Select(x => x.Key));
+                int count = 0;
+                while (tempCushion.Count > 0)
+                {
+                    tempCushion = spaceCounts.Where(x => x.Value[0] > count && x.Value[1] > count).Select(x => x.Key).ToList();
+                    count++;
+                    if (tempCushion.Count > 0)
+                    {
+                        mostCushion.Clear();
+                        mostCushion = tempCushion;
+                    }
+                }
+                var totalSpace = spaceCounts.Where(x => mostCushion.Contains(x.Key)).Select(x => new { Character = x, SpaceSum = x.Value[0] + x.Value[1] }).OrderByDescending(x => x.SpaceSum);
+                return totalSpace.Where(x => x.SpaceSum == totalSpace.First().SpaceSum).Select(x => x.Character.Key).ToArray();
+            }
+            return result.Select(x => x).ToArray();
+            //var sort = spaceCounts.OrderByDescending(x => x.Value[0]).ThenByDescending(x => x.Value[1]);
+            //return sort.Where(x => x.Value[0] == sort.First().Value[0] && x.Value[1] == sort.First().Value[1]).Select(x => x.Key).ToArray();
+        }
+        public static string HackMyTerminal(int passLength, string machineCode)
+        {
+            if (string.IsNullOrEmpty(machineCode) || passLength == 0)
+            {
+                return null;
+            }
+            var trim = string.Join("", machineCode.Select(x => char.IsLetter(x) ? x : ' ')).Split(" ").Where(x => !string.IsNullOrWhiteSpace(x)).Where(x => x.Length == passLength).ToList();
+            if (trim.Count() == 1)
+            {
+                return trim.First();
+            }
+            int index = 0;
+            for (int i = 0; i < passLength; i++)
+            {
+                var placeCheck = trim.Select(x => x[i]).ToList();
+                if (!placeCheck.All(x => x == placeCheck.First()) && placeCheck.Distinct().Count() != placeCheck.Count)
+                {
+                    index = placeCheck.IndexOf(placeCheck.Select(x => new { Value = x, Count = placeCheck.Where(y => y == x).Count() }).Where(x => x.Count == 1).Select(x => x.Value).First()) ;
+                    break;
+                }
+            }
+            return trim[index];
+        }
+        public static string EncodeCipher(string text, string key)
+        {
+            string alpha = "abcdefghijklmnopqrstuvwxyz";
+            string remaining = string.Join("", alpha.Where(x => !key.Contains(x)));
+            string completeKey = string.Join("", key.GroupBy(x => x).Select(x => x.Key)) + remaining;
+
+            string cipherEncode = "";
+            int letterPlace = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (char.IsLetter(text[i]))
+                {
+                    letterPlace++;
+                    int tempMove = completeKey.IndexOf(char.ToLower(text[i])) + letterPlace;
+                    while (tempMove > 25)
+                    {
+                        tempMove -= 26;
+                    }
+                    char tempLetter = completeKey[tempMove];
+                    if (char.IsUpper(text[i]))
+                    {
+                        tempLetter = char.ToUpper(tempLetter);
+                    }
+                    cipherEncode += tempLetter;
+                }
+                else
+                {
+                    cipherEncode += text[i];
+                    letterPlace = 0;
+                }
+            }
+            return cipherEncode;
+        }
+        public static string DecodeCipher(string text, string key)
+        {
+            string alpha = "abcdefghijklmnopqrstuvwxyz";
+            string remaining = string.Join("", alpha.Where(x => !key.Contains(x)));
+            string completeKey = string.Join("", key.GroupBy(x => x).Select(x => x.Key)) + remaining;
+
+            string cipherDecode = "";
+            int letterPlace = 0;
+            for (int i = 0; i < text.Length; i++)
+            {
+                if (char.IsLetter(text[i]))
+                {
+                    letterPlace++;
+                    int tempMove = completeKey.IndexOf(char.ToLower(text[i])) - letterPlace;
+                    while (tempMove < 0)
+                    {
+                        tempMove += 26;
+                    }
+                    char tempLetter = completeKey[tempMove];
+                    if (char.IsUpper(text[i]))
+                    {
+                        tempLetter = char.ToUpper(tempLetter);
+                    }
+                    cipherDecode += tempLetter;
+                }
+                else
+                {
+                    cipherDecode += text[i];
+                    letterPlace = 0;
+                }
+            }
+            return cipherDecode;
+        }
+        public static string Biggest1(int[] nums)
+        {
+            var ordered = string.Join("", nums.Select(x => x.ToString()).OrderByDescending(x => x[0]).ThenByDescending(x => x.Length).ThenByDescending(x => Convert.ToInt32(x)));
+            return ordered;
+        }
+        public static string UserModEntry { get; set; }
+        public static string ResultMessage { get; set; }
+        public static string ResultStatus { get; set; }
+
+        public static List<string> WordPresence(string wordCheck)
+        {
+            List<string> splitWords = new List<string>();
+            if (wordCheck.Contains(' ') || wordCheck.Contains('.') || wordCheck.Contains('!') || wordCheck.Contains('?') || wordCheck.Contains(',') || wordCheck.Contains(';') || wordCheck.Contains(':'))
+            {
+                string replace = wordCheck.Replace('.', ' ').Replace('!', ' ').Replace('?', ' ').Replace(',', ' ').Replace(';', ' ').Replace(':', ' ');
+                if (replace.Any(x => x != ' '))
+                {
+                    splitWords = replace.Split(' ').Where(x => !string.IsNullOrWhiteSpace(x)).Select(x => x.Trim()).ToList();
+                }
+            }
+            else
+            {
+                splitWords.Add(wordCheck);
+            }
+            return splitWords;
+        }
+
+        public static void OrderWords(string text)
+        {
+            var wordList = WordPresence(text);
+            if (wordList.Count > 0)
+            {
+                if (wordList.Count > 1)
+                {
+                    string modifiedText = string.Join(" ", wordList.OrderBy(x => x));
+                    if (modifiedText != UserModEntry)
+                    {
+                        UserModEntry = modifiedText;
+                        ResultStatus = "Modification Successful:";
+                        ResultMessage = "All words in text entry have been ordered.";
+                    }
+                    else
+                    {
+                        ResultStatus = "Modification Unsuccessful:";
+                        ResultMessage = "All words in text entry are already ordered.";
+                    }
+                }
+                else
+                {
+                    ResultStatus = "Modification Unsuccessful:";
+                    ResultMessage = $"Insufficient amount of words for ordering. Text entry only contains one qualified word.";
+                }
+            }
+            else
+            {
+                ResultStatus = "Modification Unsuccessful:";
+                ResultMessage = "Text entry does not contain any qualified words for ordering.";
+            }
+
+        }
+
         public static int SearchArray(object[][] arrayToSearch, object[] query)
         {
             var searchCheck = arrayToSearch.Where(x => !x.GetType().IsArray || x.Length != 2);
